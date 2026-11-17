@@ -1,4 +1,5 @@
-# G.md --- Bolt Agent Completion Instructions
+# agent.md
+
 
 > **Purpose:** Give Bolt.new one clear execution brief to complete the
 > existing project using the full implementation specification below.
