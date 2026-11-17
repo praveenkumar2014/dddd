@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { X, CircleCheck as CheckCircle2, CircleAlert as AlertCircle } from "lucide-react";
-import { supabase } from "../lib/supabase";
+import { isSupabaseConfigured, supabase } from "../lib/supabase";
+import { useFocusTrap } from "../hooks/useFocusTrap";
+import { useScrollLock } from "../hooks/useScrollLock";
 
 interface ContactSalesModalProps {
   open: boolean;
@@ -19,12 +21,38 @@ export default function ContactSalesModal({ open, onClose }: ContactSalesModalPr
   const [teamSize, setTeamSize] = useState(TEAM_SIZES[0]);
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<Status>({ kind: "idle" });
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useScrollLock(open);
+  useFocusTrap(open, dialogRef, closeButtonRef);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open, onClose]);
 
   if (!open) return null;
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !company.trim()) return;
+
+    // Single integration point for lead capture. When Supabase is not configured
+    // we surface an explicit message instead of faking a successful submission.
+    if (!isSupabaseConfigured || !supabase) {
+      setStatus({
+        kind: "error",
+        message:
+          "Lead capture isn't configured in this environment. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to enable submissions.",
+      });
+      return;
+    }
+
     setStatus({ kind: "sending" });
     const { error } = await supabase.from("sales_leads").insert({
       name: name.trim(),
@@ -49,8 +77,15 @@ export default function ContactSalesModal({ open, onClose }: ContactSalesModalPr
         className="absolute inset-0 bg-zinc-950/40 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-zinc-200 animate-[popIn_180ms_ease-out]">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="contact-sales-title"
+        className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-zinc-200 animate-[popIn_180ms_ease-out]"
+      >
         <button
+          ref={closeButtonRef}
           onClick={onClose}
           aria-label="Close"
           className="absolute right-4 top-4 rounded-md p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 transition"
@@ -75,7 +110,9 @@ export default function ContactSalesModal({ open, onClose }: ContactSalesModalPr
           </div>
         ) : (
           <>
-            <h3 className="text-lg font-semibold tracking-tight text-zinc-950">Contact sales</h3>
+            <h3 id="contact-sales-title" className="text-lg font-semibold tracking-tight text-zinc-950">
+              Contact sales
+            </h3>
             <p className="mt-1 text-sm leading-relaxed text-zinc-600">
               Tell us a little about your team and we'll set you up with SSO, workspace governance and
               dedicated inference.

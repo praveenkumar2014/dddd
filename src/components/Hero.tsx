@@ -1,4 +1,6 @@
+import { Link } from "react-router-dom";
 import { Play, Sparkles, Music, Pause, Signal } from "lucide-react";
+import { buttonPrimary } from "./ui/button";
 
 export default function Hero() {
   return (
@@ -18,15 +20,18 @@ export default function Hero() {
             surface, from first concept to production-ready asset.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <button className="rounded-lg bg-zinc-950 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800 hover:shadow-md">
+            <Link to="/signup" className={buttonPrimary}>
               Get started for free
-            </button>
-            <button className="group inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50">
+            </Link>
+            <a
+              href="#features"
+              className="group inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50"
+            >
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-950 text-white transition group-hover:bg-zinc-700">
                 <Play className="ml-0.5 h-2.5 w-2.5 fill-current" />
               </span>
               Watch live demo
-            </button>
+            </a>
           </div>
           <p className="mt-6 text-xs text-zinc-400">Free forever for individuals. No credit card required.</p>
         </div>
@@ -94,9 +99,12 @@ export default function Hero() {
                   </div>
                 </div>
                 <div className="flex items-center justify-center gap-4 px-4 py-3.5">
-                  <button className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-950 text-white transition hover:scale-105">
+                  <span
+                    aria-hidden="true"
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-950 text-white transition hover:scale-105"
+                  >
                     <Pause className="h-3.5 w-3.5 fill-current" />
-                  </button>
+                  </span>
                   <div className="flex-1">
                     <div className="h-1 rounded-full bg-zinc-200">
                       <div className="h-1 w-2/5 rounded-full bg-[#22C55E]" />
